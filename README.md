@@ -1,13 +1,3 @@
-## 📡 端口总览
-
-| 模块 | 端口 | 说明 | 来源 |
-| --- | --- | --- | --- |
-| Go 后端服务 | `9090` | Gin API / SSE 服务入口 | `config/config.toml` → `[mainConfig] port` |
-| Vue 前端 DevServer | `8080` | `vue-cli-service serve` 默认访问地址 | `vue-frontend/vue.config.js` |
-| MySQL | `3307` | 主业务数据库 `GopherAI` | `config/config.toml` → `[mysqlConfig] port` |
-| Redis | `6380` | 验证码、缓存等 | `config/config.toml` → `[redisConfig] port` |
-| RabbitMQ | `5672` | 异步消息/任务队列 | `config/config.toml` → `[rabbitmqConfig] port` |
-
 # Go项目推荐：AI应用服务平台（GopherAI）
 
 GopherAI 是一个基于 Go + Vue3 的 AI 应用服务平台，聚合了多会话聊天、图像识别、流式输出等典型 AI 能力，配套 MySQL / Redis / RabbitMQ 等基础设施，可直接作为全栈示例或生产级骨架使用。
@@ -31,6 +21,16 @@ GopherAI 是一个基于 Go + Vue3 的 AI 应用服务平台，聚合了多会�
 ![image](https://file1.kamacoder.com/i/web/2025-11-20_09-34-09.jpg)
 
 > 架构图覆盖 Web 层、业务服务、AI 推理、消息队列与数据层，展示了从请求进入、AI 处理到结果落库和前端展示的完整链路。
+
+## 📡 端口总览
+
+| 模块 | 端口 | 说明 | 来源 |
+| --- | --- | --- | --- |
+| Go 后端服务 | `9090` | Gin API / SSE 服务入口 | `config/config.toml` → `[mainConfig] port` |
+| Vue 前端 DevServer | `8080` | `vue-cli-service serve` 默认访问地址 | `vue-frontend/vue.config.js` |
+| MySQL | `3307` | 主业务数据库 `GopherAI` | `config/config.toml` → `[mysqlConfig] port` |
+| Redis | `6380` | 验证码、缓存等 | `config/config.toml` → `[redisConfig] port` |
+| RabbitMQ | `5672` | 异步消息/任务队列 | `config/config.toml` → `[rabbitmqConfig] port` |
 
 ## 📁 主要目录
 
