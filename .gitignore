@@ -29,3 +29,6 @@ build/
 # Coverage
 coverage/
 *.coverprofile
+
+# Keys
+env.sh
