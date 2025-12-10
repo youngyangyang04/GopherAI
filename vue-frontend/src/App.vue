@@ -23,14 +23,16 @@ export default {
 
 html, body {
   height: 100%;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family: 'Google Sans', 'Roboto', 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f5f7fa;
+  background: #f8f9fa;
+  color: #1f1f1f;
 }
 
 #app {
   height: 100%;
+  background: #f8f9fa;
 }
 
 /* 页面切换动画 */
@@ -73,19 +75,43 @@ html, body {
 /* Element Plus 组件样式覆盖 */
 .el-button {
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.el-button--primary {
+  background-color: #1a73e8;
+  border-color: #1a73e8;
+  color: #fff;
+}
+
+.el-button--primary:hover {
+  background-color: #1967d2;
+  border-color: #1967d2;
+  box-shadow: 0 8px 20px rgba(25, 103, 210, 0.25);
+}
+
+.el-button--text {
+  color: #1a73e8;
+}
+
+.el-button--text:hover {
+  color: #174ea6;
 }
 
 .el-input {
-  border-radius: 8px;
+  border-radius: 10px;
+  border-color: rgba(32, 33, 36, 0.12);
 }
 
 .el-card {
-  border-radius: 12px;
+  border-radius: 16px;
+  border-color: rgba(32, 33, 36, 0.08);
+  box-shadow: 0 6px 18px rgba(32, 33, 36, 0.08);
 }
 
 .el-message {
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 /* 响应式设计 */

@@ -26,6 +26,7 @@ func GetUserSessionsByUserName(userName string) ([]model.SessionInfo, error) {
 		SessionInfos = append(SessionInfos, model.SessionInfo{
 			SessionID: session,
 			Title:     session, // 暂时用sessionID作为标题，后续重构需要的时候可以更改
+			// TODO: 使用实际的标题
 		})
 	}
 
@@ -66,7 +67,6 @@ func CreateSessionAndSendMessage(userName string, userQuestion string, modelType
 	return createdSession.ID, aiResponse.Content, code.CodeSuccess
 }
 
-
 func CreateStreamSessionOnly(userName string, userQuestion string) (string, code.Code) {
 	newSession := &model.Session{
 		ID:       uuid.New().String(),
@@ -80,7 +80,6 @@ func CreateStreamSessionOnly(userName string, userQuestion string) (string, code
 	}
 	return createdSession.ID, code.CodeSuccess
 }
-
 
 func StreamMessageToExistingSession(userName string, sessionID string, userQuestion string, modelType string, writer http.ResponseWriter) code.Code {
 	// 确保 writer 支持 Flush
@@ -119,7 +118,6 @@ func StreamMessageToExistingSession(userName string, sessionID string, userQuest
 		return code.AIModelFail
 	}
 
-
 	_, err = writer.Write([]byte("data: [DONE]\n\n"))
 	if err != nil {
 		log.Println("StreamMessageToExistingSession write DONE error:", err)
@@ -130,14 +128,12 @@ func StreamMessageToExistingSession(userName string, sessionID string, userQuest
 	return code.CodeSuccess
 }
 
-
 func CreateStreamSessionAndSendMessage(userName string, userQuestion string, modelType string, writer http.ResponseWriter) (string, code.Code) {
 
 	sessionID, code_ := CreateStreamSessionOnly(userName, userQuestion)
 	if code_ != code.CodeSuccess {
 		return "", code_
 	}
-
 
 	code_ = StreamMessageToExistingSession(userName, sessionID, userQuestion, modelType, writer)
 	if code_ != code.CodeSuccess {
@@ -147,8 +143,6 @@ func CreateStreamSessionAndSendMessage(userName string, userQuestion string, mod
 
 	return sessionID, code.CodeSuccess
 }
-
-
 
 func ChatSend(userName string, sessionID string, userQuestion string, modelType string) (string, code.Code) {
 	//1：获取AIHelper
