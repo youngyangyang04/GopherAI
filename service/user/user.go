@@ -49,6 +49,7 @@ func Register(email, password, captcha string) (string, code.Code) {
 		return "", code.CodeInvalidCaptcha
 	}
 
+	// TODO: 这里生成的 11 位账号可能会重复，后续需要改进为循环检测直到不重复为止
 	//3：生成11位的账号
 	username := utils.GetRandomNumbers(11)
 

@@ -3,6 +3,7 @@ package redis
 import (
 	"GopherAI/config"
 	"context"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -42,23 +43,23 @@ func SetCaptchaForEmail(email, captcha string) error {
 func CheckCaptchaForEmail(email, userInput string) (bool, error) {
 	key := GenerateCaptcha(email)
 
+	// 在 Redis 中获取存储的验证码
 	storedCaptcha, err := Rdb.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
 
 			return false, nil
 		}
-
 		return false, err
 	}
 
 	if strings.EqualFold(storedCaptcha, userInput) {
-
 		// 验证成功后删除 key
 		if err := Rdb.Del(ctx, key).Err(); err != nil {
-
+			// 删除失败，但验证码已验证成功，记录日志即可
+			log.Println("Del captcha key failed:", err)
 		} else {
-
+			log.Println("Del captcha key success:", key)
 		}
 		return true, nil
 	}

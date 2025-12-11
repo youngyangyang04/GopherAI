@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// GetRandomNumbers 生成num位随机数字字符串
 func GetRandomNumbers(num int) string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
