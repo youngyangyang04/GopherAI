@@ -4,6 +4,7 @@ import (
 	"GopherAI/common/aihelper"
 	"GopherAI/common/code"
 	"GopherAI/dao/session"
+
 	"GopherAI/model"
 	"context"
 	"log"
@@ -187,10 +188,10 @@ func GetChatHistory(userName string, sessionID string) ([]model.History, code.Co
 	history := make([]model.History, 0, len(messages))
 
 	// 转换消息为历史格式（根据消息顺序或内容判断用户/AI消息）
-	for i, msg := range messages {
-		isUser := i%2 == 0
+	for _, msg := range messages {
+		// isUser := i%2 == 0
 		history = append(history, model.History{
-			IsUser:  isUser,
+			IsUser:  msg.IsUser,
 			Content: msg.Content,
 		})
 	}
