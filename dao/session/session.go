@@ -21,3 +21,9 @@ func GetSessionByID(sessionID string) (*model.Session, error) {
 	err := mysql.DB.Where("id = ?", sessionID).First(&session).Error
 	return &session, err
 }
+
+func GetAllSessions() ([]model.Session, error) {
+	var sessions []model.Session
+	err := mysql.DB.Find(&sessions).Error
+	return sessions, err
+}

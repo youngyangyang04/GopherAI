@@ -8,7 +8,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -18,29 +17,29 @@ var ctx = context.Background()
 func GetUserSessionsByUserName(userName string) ([]model.SessionInfo, error) {
 	//获取用户的所有会话ID
 
-	// manager := aihelper.GetGlobalManager()
-	// Sessions := manager.GetUserSessions(userName)
+	manager := aihelper.GetGlobalManager()
+	Sessions := manager.GetUserSessions(userName)
 
-	userName_int64, err := strconv.ParseInt(userName, 10, 64)
-	if err != nil {
-		log.Println("GetUserSessionsByUserName ParseInt error:", err)
-		return nil, err
-	}
-	Sessions, err := session.GetSessionsByUserName(userName_int64)
-	if err != nil {
-		return nil, err
-	}
+	// userName_int64, err := strconv.ParseInt(userName, 10, 64)
+	// if err != nil {
+	// 	log.Println("GetUserSessionsByUserName ParseInt error:", err)
+	// 	return nil, err
+	// }
+	// Sessions, err := session.GetSessionsByUserName(userName_int64)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	var SessionInfos []model.SessionInfo
+	// var SessionInfos []model.SessionInfo
 
-	for _, session := range Sessions {
-		SessionInfos = append(SessionInfos, model.SessionInfo{
-			SessionID: session.ID,
-			Title:     session.Title,
-		})
-	}
+	// for _, session := range Sessions {
+	// 	SessionInfos = append(SessionInfos, model.SessionInfo{
+	// 		SessionID: session.ID,
+	// 		Title:     session.Title,
+	// 	})
+	// }
 
-	return SessionInfos, nil
+	return Sessions, nil
 }
 
 func CreateSessionAndSendMessage(userName string, userQuestion string, modelType string) (string, string, code.Code) {

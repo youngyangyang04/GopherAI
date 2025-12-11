@@ -15,11 +15,12 @@ type AIHelper struct {
 	mu       sync.RWMutex
 	//一个会话绑定一个AIHelper
 	SessionID string
+	Title     string
 	saveFunc  func(*model.Message) (*model.Message, error)
 }
 
 // NewAIHelper 创建新的AIHelper实例
-func NewAIHelper(model_ AIModel, SessionID string) *AIHelper {
+func NewAIHelper(model_ AIModel, SessionID string, title string) *AIHelper {
 	return &AIHelper{
 		model:    model_,
 		messages: make([]*model.Message, 0),
@@ -30,6 +31,7 @@ func NewAIHelper(model_ AIModel, SessionID string) *AIHelper {
 			return msg, err
 		},
 		SessionID: SessionID,
+		Title:     title,
 	}
 }
 

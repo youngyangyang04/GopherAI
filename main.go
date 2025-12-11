@@ -7,6 +7,7 @@ import (
 	"GopherAI/common/redis"
 	"GopherAI/config"
 	"GopherAI/dao/message"
+	"GopherAI/dao/session"
 	"GopherAI/router"
 	"fmt"
 	"log"
@@ -27,7 +28,23 @@ func readDataFromDB() error {
 	if err != nil {
 		return err
 	}
-	// 遍历数据库消息
+
+	// 首先创建所有 session 对应的 AIHelper
+	sessions, err := session.GetAllSessions()
+	for _, s := range sessions {
+		//默认openai模型
+		modelType := "1"
+		config := make(map[string]interface{})
+
+		// 创建对应的 AIHelper
+		_, err := manager.GetOrCreateAIHelper(s.UserName, s.ID, modelType, config, s.Title)
+		if err != nil {
+			log.Printf("[readDataFromDB] failed to create helper for user=%s session=%s: %v", s.UserName, s.ID, err)
+			continue
+		}
+	}
+
+	// 数据库信息加载到内存中
 	for i := range msgs {
 		m := &msgs[i]
 		//默认openai模型

@@ -58,12 +58,12 @@ func (f *AIModelFactory) CreateAIModel(ctx context.Context, modelType string, co
 }
 
 // CreateAIHelper 一键创建 AIHelper
-func (f *AIModelFactory) CreateAIHelper(ctx context.Context, modelType string, SessionID string, config map[string]interface{}) (*AIHelper, error) {
+func (f *AIModelFactory) CreateAIHelper(ctx context.Context, modelType string, SessionID string, config map[string]interface{}, title string) (*AIHelper, error) {
 	model, err := f.CreateAIModel(ctx, modelType, config)
 	if err != nil {
 		return nil, err
 	}
-	return NewAIHelper(model, SessionID), nil
+	return NewAIHelper(model, SessionID, title), nil
 }
 
 // RegisterModel 可扩展注册

@@ -1,6 +1,7 @@
 package aihelper
 
 import (
+	"GopherAI/model"
 	"context"
 	"sync"
 )
@@ -20,8 +21,14 @@ func NewAIHelperManager() *AIHelperManager {
 	}
 }
 
-// 获取或创建AIHelper
-func (m *AIHelperManager) GetOrCreateAIHelper(userName string, sessionID string, modelType string, config map[string]interface{}) (*AIHelper, error) {
+func (m *AIHelperManager) GetOrCreateAIHelper(
+	userName string,
+	sessionID string,
+	modelType string,
+	config map[string]interface{},
+	titleOpt ...string, // 可选参数
+) (*AIHelper, error) {
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -38,9 +45,15 @@ func (m *AIHelperManager) GetOrCreateAIHelper(userName string, sessionID string,
 		return helper, nil
 	}
 
-	// 创建新的AIHelper
+	// 解析可选 title
+	title := ""
+	if len(titleOpt) > 0 {
+		title = titleOpt[0]
+	}
+
+	// 创建新的 AIHelper
 	factory := GetGlobalFactory()
-	helper, err := factory.CreateAIHelper(ctx, modelType, sessionID, config)
+	helper, err := factory.CreateAIHelper(ctx, modelType, sessionID, config, title)
 	if err != nil {
 		return nil, err
 	}
@@ -82,19 +95,21 @@ func (m *AIHelperManager) RemoveAIHelper(userName string, sessionID string) {
 }
 
 // 获取指定用户的所有会话ID
-func (m *AIHelperManager) GetUserSessions(userName string) []string {
+func (m *AIHelperManager) GetUserSessions(userName string) []model.SessionInfo {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	userHelpers, exists := m.helpers[userName]
 	if !exists {
-		return []string{}
+		return []model.SessionInfo{}
 	}
 
-	sessionIDs := make([]string, 0, len(userHelpers))
-	//取出所有的key
-	for sessionID := range userHelpers {
-		sessionIDs = append(sessionIDs, sessionID)
+	sessionIDs := make([]model.SessionInfo, 0, len(userHelpers))
+	for sessionID, helper := range userHelpers {
+		sessionIDs = append(sessionIDs, model.SessionInfo{
+			SessionID: sessionID,
+			Title:     helper.Title,
+		})
 	}
 
 	return sessionIDs
