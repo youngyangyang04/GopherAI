@@ -32,3 +32,4 @@ coverage/
 
 # Keys
 env.sh
+config.toml

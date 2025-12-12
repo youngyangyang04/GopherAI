@@ -34,3 +34,8 @@ port = 5672
 username = "admin"
 password = "admin"
 vhost = "/"
+
+[imageAIConfig]
+key = "sk-99ca8180a3c44abbb69909aa9083edc8"
+modelname = "qwen3-vl-plus"
+baseurl = "https://dashscope.aliyuncs.com/compatible-mode/v1"

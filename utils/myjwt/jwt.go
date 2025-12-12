@@ -27,14 +27,14 @@ func GenerateToken(id int64, username string) (string, error) {
 
 	// 生成 token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.GetConfig().Key))
+	return token.SignedString([]byte(config.GetConfig().JwtConfig.Key))
 }
 
 // ParseToken 解析Token
 func ParseToken(token string) (string, bool) {
 	claims := new(Claims)
 	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		return []byte(config.GetConfig().Key), nil
+		return []byte(config.GetConfig().JwtConfig.Key), nil
 	})
 	if !t.Valid || err != nil || claims == nil {
 		return "", false

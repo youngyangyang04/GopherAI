@@ -1,40 +1,24 @@
 package image
 
 import (
-	"GopherAI/common/image"
+	image_recognizer "GopherAI/common/image"
+	"context"
+	"image"
 	"io"
-	"log"
-	"mime/multipart"
 )
 
-
-func RecognizeImage(file *multipart.FileHeader) (string, error) {
-
-	modelPath := "/root/models/mobilenetv2/mobilenetv2-7.onnx"
-	labelPath := "/root/imagenet_classes.txt"
-	inputH, inputW := 224, 224
-
-
-	recognizer, err := image.NewImageRecognizer(modelPath, labelPath, inputH, inputW)
+func RecognizeImage(ctx context.Context, r io.Reader) (string, error) {
+	img, _, err := image.Decode(r)
 	if err != nil {
-		log.Println("NewImageRecognizer fail err is : ", err)
-		return "", err
-	}
-	defer recognizer.Close() 
-
-	src, err := file.Open()
-	if err != nil {
-		log.Println("file open fail err is : ", err)
-		return "", err
-	}
-	defer src.Close()
-
-	buf, err := io.ReadAll(src)
-	if err != nil {
-		log.Println("io.ReadAll fail err is : ", err)
 		return "", err
 	}
 
+	// TODO: 目前去除了 Buffer 之后补全
+	ri, err := image_recognizer.NewImageRecognizer(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer ri.Close()
 
-	return recognizer.PredictFromBuffer(buf)
+	return ri.PredictFromFile(ctx, img)
 }

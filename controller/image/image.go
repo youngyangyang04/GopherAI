@@ -19,19 +19,24 @@ type (
 
 func RecognizeImage(c *gin.Context) {
 	res := new(RecognizeImageResponse)
-	file, err := c.FormFile("image")
+	fileHeader, err := c.FormFile("image")
 	if err != nil {
 		log.Println("FormFile fail ", err)
 		c.JSON(http.StatusOK, res.CodeOf(code.CodeInvalidParams))
 		return
 	}
 
-	className, err := image.RecognizeImage(file)
+	file, err := fileHeader.Open()
 	if err != nil {
-		log.Println("RecognizeImage fail ", err)
+		log.Println("Open file fail ", err)
 		c.JSON(http.StatusOK, res.CodeOf(code.CodeServerBusy))
 		return
 	}
+
+	defer file.Close()
+
+	className, err := image.RecognizeImage(c.Request.Context(), file)
+
 
 	res.Success()
 	res.ClassName = className

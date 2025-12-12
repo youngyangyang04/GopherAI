@@ -48,13 +48,20 @@ type Rabbitmq struct {
 	RabbitmqVhost    string `toml:"vhost"`
 }
 
+type ImageAIConfig struct {
+	Key       string `toml:"key"`
+	ModelName string `toml:"modelname"`
+	BaseURL   string `toml:"baseurl"`
+}
+
 type Config struct {
-	EmailConfig `toml:"emailConfig"`
-	RedisConfig `toml:"redisConfig"`
-	MysqlConfig `toml:"mysqlConfig"`
-	JwtConfig   `toml:"jwtConfig"`
-	MainConfig  `toml:"mainConfig"`
-	Rabbitmq    `toml:"rabbitmqConfig"`
+	EmailConfig   `toml:"emailConfig"`
+	RedisConfig   `toml:"redisConfig"`
+	MysqlConfig   `toml:"mysqlConfig"`
+	JwtConfig     `toml:"jwtConfig"`
+	MainConfig    `toml:"mainConfig"`
+	Rabbitmq      `toml:"rabbitmqConfig"`
+	ImageAIConfig `toml:"imageAIConfig"`
 }
 
 type RedisKeyConfig struct {
