@@ -25,7 +25,7 @@ func GetRandomNumbers(num int) string {
 	return code
 }
 
-// MD5 MD5加密
+// MD5加密
 func MD5(str string) string {
 	m := md5.New()
 	m.Write([]byte(str))

@@ -62,6 +62,7 @@ func GetUserSessionsByUserName(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+// TODO: 目前只支持 qwen，增加 ollama 的支持
 func CreateSessionAndSendMessage(c *gin.Context) {
 	req := new(CreateSessionAndSendMessageRequest)
 	res := new(CreateSessionAndSendMessageResponse)
