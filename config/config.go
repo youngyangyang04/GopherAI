@@ -59,6 +59,11 @@ type OllamaConfig struct {
 	ModelName string `toml:"modelName"`
 }
 
+type GoogleConfig struct {
+	GoogleAPIKey         string `toml:"googleAPIKey"`
+	GoogleSearchEngineID string `toml:"googleSearchEngineID"`
+}
+
 type Config struct {
 	EmailConfig   `toml:"emailConfig"`
 	RedisConfig   `toml:"redisConfig"`
@@ -68,6 +73,7 @@ type Config struct {
 	Rabbitmq      `toml:"rabbitmqConfig"`
 	ImageAIConfig `toml:"imageAIConfig"`
 	OllamaConfig  `toml:"ollamaConfig"`
+	GoogleConfig  `toml:"googleConfig"`
 }
 
 type RedisKeyConfig struct {

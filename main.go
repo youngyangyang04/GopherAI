@@ -5,6 +5,7 @@ import (
 	"GopherAI/common/mysql"
 	"GopherAI/common/rabbitmq"
 	"GopherAI/common/redis"
+	"GopherAI/common/tools"
 	"GopherAI/config"
 	"GopherAI/dao/message"
 	"GopherAI/dao/session"
@@ -86,6 +87,12 @@ func main() {
 	log.Println("redis init success  ")
 	rabbitmq.InitRabbitMQ()
 	log.Println("rabbitmq init success  ")
+
+	// 初始化 Tools
+	if err := tools.InitTools(); err != nil {
+		log.Println("InitTools error , " + err.Error())
+		return
+	}
 
 	err := StartServer(host, port) // 启动 HTTP 服务
 	if err != nil {

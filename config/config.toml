@@ -43,3 +43,7 @@ modelName = "gemma3:4b"
 key = "sk-99ca8180a3c44abbb69909aa9083edc8"
 modelname = "qwen3-vl-plus"
 baseurl = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+[googleConfig]
+googleAPIKey = "AIzaSyB45PzQigSxozVA6VjfW9rlA1EtrJ8WvYk"
+googleSearchEngineID = "f0f6c8d0d4bef44af"

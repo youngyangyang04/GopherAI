@@ -1,6 +1,7 @@
 package aihelper
 
 import (
+	"GopherAI/common/tools"
 	"context"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 )
 
@@ -80,8 +82,12 @@ func NewOpenAIModel(ctx context.Context) (*OpenAIModel, error) {
 
 func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {
 	// TODO: 接入工具，构建 agent
+	googleTools, err := tools.GetTools().GetGoogleSearchTool(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get google search tool failed: %v", err)
+	}
 	todoTools := []tool.BaseTool{
-		getAddTodoTool(),
+		googleTools,
 	}
 
 	// 获取工具信息并绑定到 ChatModel
@@ -99,10 +105,33 @@ func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.M
 	if err != nil {
 		return nil, fmt.Errorf("openai add tools failed: %v", err)
 	}
-	resp, err := llm_new.Generate(ctx, messages)
+
+	// 创建 tools 节点
+	todoToolsNode, err := compose.NewToolNode(context.Background(), &compose.ToolsNodeConfig{
+		Tools: todoTools,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 构建完整的处理链
+	chain := compose.NewChain[[]*schema.Message, *schema.Message]()
+	chain.
+		AppendChatModel(llm_new, compose.WithNodeName("chat_model")).
+		AppendToolsNode(todoToolsNode, compose.WithNodeName("tools"))
+		// AppendChatModel(llm_new, compose.WithNodeName("chat_model"))
+
+	// 编译并运行 chain
+	agent, err := chain.Compile(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := agent.Invoke(ctx, messages)
 	if err != nil {
 		return nil, fmt.Errorf("openai generate failed: %v", err)
 	}
+
 	return resp, nil
 }
 
