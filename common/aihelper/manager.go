@@ -109,6 +109,7 @@ func (m *AIHelperManager) GetUserSessions(userName string) []model.SessionInfo {
 		sessionIDs = append(sessionIDs, model.SessionInfo{
 			SessionID: sessionID,
 			Title:     helper.Title,
+			ModelType: helper.model.GetModelType(),
 		})
 	}
 

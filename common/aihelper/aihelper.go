@@ -91,6 +91,7 @@ func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQu
 }
 
 // 流式生成
+// FIXME: 目前流式回调函数存在问题，还是都生成了再统一回复，同时到前端渲染也有问题
 func (a *AIHelper) StreamResponse(userName string, ctx context.Context, cb StreamCallback, userQuestion string) (*model.Message, error) {
 
 	//调用存储函数

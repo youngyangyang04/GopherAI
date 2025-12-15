@@ -13,7 +13,8 @@
           :class="['session-item', { active: currentSessionId === session.id }]"
           @click="switchSession(session.id)"
         >
-          {{ session.name || `会话 ${session.id}` }}
+          <div class="session-name">{{ session.name || `会话 ${session.id}` }}</div>
+          <div class="session-model" v-if="session.modelType">模型：{{ session.modelType }}</div>
         </li>
       </ul>
     </div>
@@ -25,8 +26,8 @@
         <button class="sync-btn" @click="syncHistory" :disabled="!currentSessionId || tempSession">同步历史数据</button>
         <label for="modelType">选择模型：</label>
         <select id="modelType" v-model="selectedModel" class="model-select">
-          <option value="1">通义千问（Qwen）</option>
-          <option value="2">Gemma3</option>
+          <option value="1">openai</option>
+          <option value="2">ollama</option>
         </select>
         <label for="streamingMode" style="margin-left: 20px;">
           <input type="checkbox" id="streamingMode" v-model="isStreaming" />
@@ -96,6 +97,21 @@ export default {
     const selectedModel = ref('1')
     const isStreaming = ref(false)
 
+    const modelValueToLabel = (value) => {
+      const normalized = String(value ?? '').toLowerCase()
+      if (normalized === '1' || normalized === 'openai') return 'openai'
+      if (normalized === '2' || normalized === 'ollama') return 'ollama'
+      return normalized || ''
+    }
+
+    const modelLabelToValue = (label) => {
+      const normalized = String(label ?? '').toLowerCase()
+      if (!normalized) return selectedModel.value
+      if (normalized === 'openai' || normalized === '1') return '1'
+      if (normalized === 'ollama' || normalized === '2') return '2'
+      return String(label)
+    }
+
 
     const renderMarkdown = (text) => {
       if (!text && text !== '') return ''
@@ -131,6 +147,7 @@ export default {
             sessionMap[sid] = {
               id: sid,
               name: s.name || `会话 ${sid}`,
+              modelType: s.modelType || '',
               messages: [] // lazy load
             }
           })
@@ -153,11 +170,18 @@ export default {
 
     const switchSession = async (sessionId) => {
       if (!sessionId) return
-      currentSessionId.value = String(sessionId)
+      const normalizedId = String(sessionId)
+      currentSessionId.value = normalizedId
       tempSession.value = false
 
+      const sessionData = sessions.value[normalizedId]
+      if (!sessionData) return
+      if (sessionData.modelType) {
+        selectedModel.value = modelLabelToValue(sessionData.modelType)
+      }
+
       // lazy load history if not present
-      if (!sessions.value[sessionId].messages || sessions.value[sessionId].messages.length === 0) {
+      if (!sessionData.messages || sessionData.messages.length === 0) {
         try {
           const response = await api.post('/AI/chat/history', { sessionId: currentSessionId.value })
           if (response.data && response.data.status_code === 1000 && Array.isArray(response.data.history)) {
@@ -165,7 +189,7 @@ export default {
               role: item.is_user ? 'user' : 'assistant',
               content: item.content
             }))
-            sessions.value[sessionId].messages = messages
+            sessions.value[normalizedId].messages = messages
           }
         } catch (err) {
           console.error('Load history error:', err)
@@ -173,7 +197,7 @@ export default {
       }
 
 
-      currentMessages.value = [...(sessions.value[sessionId].messages || [])]
+      currentMessages.value = [...(sessions.value[normalizedId].messages || [])]
       await nextTick()
       scrollToBottom()
     }
@@ -342,6 +366,7 @@ export default {
                       sessions.value[newSid] = {
                         id: newSid,
                         name: '新会话',
+                        modelType: parsed.modelType || modelValueToLabel(selectedModel.value),
                         messages: [...currentMessages.value]
                       }
                       currentSessionId.value = newSid
@@ -417,6 +442,7 @@ export default {
           sessions.value[sessionId] = {
             id: sessionId,
             name: '新会话',
+            modelType: response.data.modelType || modelValueToLabel(selectedModel.value),
             messages: [ { role: 'user', content: question }, aiMessage ]
           }
           currentSessionId.value = sessionId
@@ -549,6 +575,16 @@ export default {
   border-bottom: 1px solid rgba(60, 64, 67, 0.08);
   color: #3c4043;
   transition: background 0.2s ease;
+}
+
+.session-name {
+  font-weight: 600;
+}
+
+.session-model {
+  font-size: 12px;
+  color: #5f6368;
+  margin-top: 4px;
 }
 
 .session-item.active {

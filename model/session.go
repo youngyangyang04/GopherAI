@@ -19,4 +19,5 @@ type Session struct {
 type SessionInfo struct {
 	SessionID string `json:"sessionId"`
 	Title     string `json:"name"`
+	ModelType string `json:"modelType"`
 }
