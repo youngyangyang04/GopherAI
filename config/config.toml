@@ -35,6 +35,10 @@ username = "admin"
 password = "admin"
 vhost = "/"
 
+[ollamaConfig]
+baseURL = "http://localhost:11434"
+modelName = "gemma3:4b"
+
 [imageAIConfig]
 key = "sk-99ca8180a3c44abbb69909aa9083edc8"
 modelname = "qwen3-vl-plus"

@@ -54,6 +54,11 @@ type ImageAIConfig struct {
 	BaseURL   string `toml:"baseurl"`
 }
 
+type OllamaConfig struct {
+	BaseURL   string `toml:"baseURL"`
+	ModelName string `toml:"modelName"`
+}
+
 type Config struct {
 	EmailConfig   `toml:"emailConfig"`
 	RedisConfig   `toml:"redisConfig"`
@@ -62,6 +67,7 @@ type Config struct {
 	MainConfig    `toml:"mainConfig"`
 	Rabbitmq      `toml:"rabbitmqConfig"`
 	ImageAIConfig `toml:"imageAIConfig"`
+	OllamaConfig  `toml:"ollamaConfig"`
 }
 
 type RedisKeyConfig struct {

@@ -50,7 +50,7 @@ func ConvertToSchemaMessages(msgs []*model.Message) []*schema.Message {
 	schemaMsgs := make([]*schema.Message, 0, len(msgs))
 	for _, m := range msgs {
 		role := schema.Assistant
-		if m.IsUser == false {
+		if m.IsUser == true {
 			role = schema.User
 		}
 		schemaMsgs = append(schemaMsgs, &schema.Message{

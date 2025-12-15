@@ -1,8 +1,10 @@
 package aihelper
 
 import (
+	myconfig "GopherAI/config"
 	"context"
 	"fmt"
+	"log"
 	"sync"
 )
 
@@ -31,6 +33,7 @@ func GetGlobalFactory() *AIModelFactory {
 }
 
 // 注册模型
+// FIXME: 整体封装有问题，config 没有使用到，而是直接读取了配置文件或环境变量
 func (f *AIModelFactory) registerCreators() {
 	//OpenAI
 	f.creators["1"] = func(ctx context.Context, config map[string]interface{}) (AIModel, error) {
@@ -39,10 +42,10 @@ func (f *AIModelFactory) registerCreators() {
 
 	//Ollama
 	f.creators["2"] = func(ctx context.Context, config map[string]interface{}) (AIModel, error) {
-		baseURL, _ := config["baseURL"].(string)
-		modelName, ok := config["modelName"].(string)
-		if !ok {
-			return nil, fmt.Errorf("Ollama model requires modelName")
+		baseURL := myconfig.GetConfig().OllamaConfig.BaseURL
+		modelName := myconfig.GetConfig().OllamaConfig.ModelName
+		if baseURL == "" || modelName == "" {
+			return nil, fmt.Errorf("Ollama model requires baseURL and modelName in config")
 		}
 		return NewOllamaModel(ctx, baseURL, modelName)
 	}
@@ -59,6 +62,7 @@ func (f *AIModelFactory) CreateAIModel(ctx context.Context, modelType string, co
 
 // CreateAIHelper 一键创建 AIHelper
 func (f *AIModelFactory) CreateAIHelper(ctx context.Context, modelType string, SessionID string, config map[string]interface{}, title string) (*AIHelper, error) {
+	log.Printf("Creating AIHelper with modelType: %s, SessionID: %s", modelType, SessionID)
 	model, err := f.CreateAIModel(ctx, modelType, config)
 	if err != nil {
 		return nil, err

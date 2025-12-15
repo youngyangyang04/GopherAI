@@ -33,3 +33,6 @@ coverage/
 # Keys
 env.sh
 config.toml
+
+# Test Dir
+test/
