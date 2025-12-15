@@ -46,9 +46,10 @@ func GetUserSessionsByUserName(userName string) ([]model.SessionInfo, error) {
 func CreateSessionAndSendMessage(userName string, userQuestion string, modelType string) (string, string, code.Code) {
 	//1：创建一个新的会话
 	newSession := &model.Session{
-		ID:       uuid.New().String(),
-		UserName: userName,
-		Title:    userQuestion, // 可以根据需求设置标题，这边暂时用用户第一次的问题作为标题
+		ID:        uuid.New().String(),
+		UserName:  userName,
+		Title:     userQuestion, // 可以根据需求设置标题，这边暂时用用户第一次的问题作为标题
+		ModelType: modelType,
 	}
 	createdSession, err := session.CreateSession(newSession)
 	if err != nil {

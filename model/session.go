@@ -13,6 +13,7 @@ type Session struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	ModelType string         `gorm:"type:varchar(50);not null" json:"model_type"`
 }
 
 type SessionInfo struct {

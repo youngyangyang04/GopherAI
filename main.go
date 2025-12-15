@@ -33,7 +33,7 @@ func readDataFromDB() error {
 	sessions, err := session.GetAllSessions()
 	for _, s := range sessions {
 		//默认openai模型
-		modelType := "1"
+		modelType := s.ModelType
 		config := make(map[string]interface{})
 
 		// 创建对应的 AIHelper

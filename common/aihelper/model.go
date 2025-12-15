@@ -106,6 +106,7 @@ func (o *OllamaModel) GenerateResponse(ctx context.Context, messages []*schema.M
 	return resp, nil
 }
 
+// TODO: 流式响应回调函数存在问题，还是都生成了再统一回复
 func (o *OllamaModel) StreamResponse(ctx context.Context, messages []*schema.Message, cb StreamCallback) (string, error) {
 	stream, err := o.llm.Stream(ctx, messages)
 	if err != nil {
