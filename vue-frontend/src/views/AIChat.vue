@@ -50,17 +50,20 @@
       </div>
 
       <div class="chat-input">
+        <div class="chat-input-hint" v-if="!canInteract">
+          请点击“新聊天”或选择历史会话后再输入
+        </div>
         <textarea
           v-model="inputMessage"
           placeholder="请输入你的问题..."
           @keydown.enter.exact.prevent="sendMessage"
-          :disabled="loading"
+          :disabled="loading || !canInteract"
           ref="messageInput"
           rows="1"
         ></textarea>
         <button
           type="button"
-          :disabled="!inputMessage.trim() || loading"
+          :disabled="!inputMessage.trim() || loading || !canInteract"
           @click="sendMessage"
           class="send-btn"
         >
@@ -202,6 +205,10 @@ export default {
 
 
     const sendMessage = async () => {
+      if (!tempSession.value && !currentSessionId.value) {
+        ElMessage.warning('请先新建或选择会话')
+        return
+      }
       if (!inputMessage.value || !inputMessage.value.trim()) {
         ElMessage.warning('请输入消息内容')
         return
@@ -458,6 +465,8 @@ export default {
       loadSessions()
     })
 
+    const canInteract = computed(() => tempSession.value || !!currentSessionId.value)
+
     // expose to template
     return {
       sessions: computed(() => Object.values(sessions.value)),
@@ -470,6 +479,7 @@ export default {
       messageInput,
       selectedModel,
       isStreaming,
+      canInteract,
       renderMarkdown,
       playTTS,
       createNewSession,
@@ -674,6 +684,7 @@ export default {
   display: flex;
   gap: 16px;
   align-items: flex-end;
+  position: relative;
 }
 
 .chat-input textarea {
@@ -706,6 +717,14 @@ export default {
 .send-btn:disabled {
   background: #dadce0;
   cursor: not-allowed;
+}
+
+.chat-input-hint {
+  position: absolute;
+  top: 8px;
+  left: 24px;
+  color: #ea4335;
+  font-size: 13px;
 }
 
 @media (max-width: 960px) {
