@@ -6,6 +6,8 @@ import (
 	"GopherAI/utils"
 	"context"
 	"sync"
+
+	"github.com/cloudwego/eino/schema"
 )
 
 // AIHelper AI助手结构体，包含消息历史和AI模型
@@ -65,7 +67,7 @@ func (a *AIHelper) GetMessages() []*model.Message {
 }
 
 // 同步生成
-func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQuestion string) (*model.Message, error) {
+func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQuestion string, usingGoogle bool) (*model.Message, error) {
 
 	//调用存储函数
 	a.AddMessage(userQuestion, userName, true, true)
@@ -76,9 +78,15 @@ func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQu
 	a.mu.RUnlock()
 
 	//调用模型生成回复
-	schemaMsg, err := a.model.GenerateResponse(ctx, messages)
-	if err != nil {
-		return nil, err
+	var schemaMsg *schema.Message
+	var err error
+	if usingGoogle {
+		schemaMsg, err = a.model.GenerateResponse(ctx, messages, WithGoogleTool())
+	} else {
+		schemaMsg, err = a.model.GenerateResponse(ctx, messages)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	//将schema.Message转化成model.Message

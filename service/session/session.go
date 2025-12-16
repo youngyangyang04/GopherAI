@@ -43,7 +43,7 @@ func GetUserSessionsByUserName(userName string) ([]model.SessionInfo, error) {
 	return Sessions, nil
 }
 
-func CreateSessionAndSendMessage(userName string, userQuestion string, modelType string) (string, string, code.Code) {
+func CreateSessionAndSendMessage(userName string, userQuestion string, modelType string, usingGoogle bool) (string, string, code.Code) {
 	//1：创建一个新的会话
 	newSession := &model.Session{
 		ID:        uuid.New().String(),
@@ -69,7 +69,7 @@ func CreateSessionAndSendMessage(userName string, userQuestion string, modelType
 	}
 
 	//3：生成AI回复
-	aiResponse, err_ := helper.GenerateResponse(userName, ctx, userQuestion)
+	aiResponse, err_ := helper.GenerateResponse(userName, ctx, userQuestion, usingGoogle)
 	if err_ != nil {
 		log.Println("CreateSessionAndSendMessage GenerateResponse error:", err_)
 		return "", "", code.AIModelFail
@@ -155,7 +155,7 @@ func CreateStreamSessionAndSendMessage(userName string, userQuestion string, mod
 	return sessionID, code.CodeSuccess
 }
 
-func ChatSend(userName string, sessionID string, userQuestion string, modelType string) (string, code.Code) {
+func ChatSend(userName string, sessionID string, userQuestion string, modelType string, usingGoogle bool) (string, code.Code) {
 	//1：获取AIHelper
 	manager := aihelper.GetGlobalManager()
 	config := map[string]interface{}{
@@ -168,7 +168,7 @@ func ChatSend(userName string, sessionID string, userQuestion string, modelType 
 	}
 
 	//2：生成AI回复
-	aiResponse, err_ := helper.GenerateResponse(userName, ctx, userQuestion)
+	aiResponse, err_ := helper.GenerateResponse(userName, ctx, userQuestion, usingGoogle)
 	if err_ != nil {
 		log.Println("ChatSend GenerateResponse error:", err_)
 		return "", code.AIModelFail

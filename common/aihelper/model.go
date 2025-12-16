@@ -23,7 +23,7 @@ type StreamCallback func(msg string)
 
 // AIModel 定义AI模型接口
 type AIModel interface {
-	GenerateResponse(ctx context.Context, messages []*schema.Message) (*schema.Message, error)
+	GenerateResponse(ctx context.Context, messages []*schema.Message, opts ...ToolOption) (*schema.Message, error)
 	StreamResponse(ctx context.Context, messages []*schema.Message, cb StreamCallback) (string, error)
 	GetModelType() string
 }
@@ -31,6 +31,27 @@ type AIModel interface {
 // =================== OpenAI 实现 ===================
 type OpenAIModel struct {
 	llm model.ToolCallingChatModel
+}
+
+// TODO: 重构文件
+// 工具选择
+type ToolOptions struct {
+	usingGoogle bool
+}
+
+func defaultToolOptions() *ToolOptions {
+	out := &ToolOptions{
+		usingGoogle: false,
+	}
+	return out
+}
+
+type ToolOption func(opts *ToolOptions)
+
+func WithGoogleTool() ToolOption {
+	return func(opts *ToolOptions) {
+		opts.usingGoogle = true
+	}
 }
 
 // NOTE: 测试代码
@@ -55,7 +76,23 @@ func NewOpenAIModel(ctx context.Context) (*OpenAIModel, error) {
 	return &OpenAIModel{llm: llm}, nil
 }
 
-func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {
+func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.Message, opts ...ToolOption) (*schema.Message, error) {
+	// 处理可选参数
+	var options *ToolOptions
+	options = defaultToolOptions()
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	// 如果不需要工具，直接使用 chat 生成回复
+	if !options.usingGoogle {
+		resp, err := o.llm.Generate(ctx, messages)
+		if err != nil {
+			return nil, fmt.Errorf("openai generate failed: %v", err)
+		}
+		return resp, nil
+	}
+
 	// TODO: 接入工具，构建 agent
 	googleTools, err := tools.GetTools().GetGoogleSearchTool(ctx)
 	if err != nil {
@@ -90,10 +127,13 @@ func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.M
 	}
 
 	// 创建一个回调函数，收集中间消息
+	var resp *schema.Message
 	handler := callbacks.NewHandlerBuilder().
 		OnEndFn(func(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
 			if info != nil && info.Component == components.ComponentOfChatModel {
 				messages = append(messages, output.(*model.CallbackOutput).Message)
+				// 暂时存储第一条回复，如果不需要调用工具则直接返回
+				resp = output.(*model.CallbackOutput).Message
 				log.Printf("Appended message from chat model to messages: %v", output.(*model.CallbackOutput).Message)
 			} else if info != nil && info.Component == components.ComponentOfTool {
 				messages = append(messages, &schema.Message{
@@ -123,11 +163,16 @@ func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.M
 
 	_, err = agent.Invoke(ctx, messages)
 	if err != nil {
-		return nil, fmt.Errorf("openai generate failed: %v", err)
+		log.Printf("chain invoke error: %v", err)
+		if resp == nil {
+			return nil, fmt.Errorf("openai generate failed: %v", err)
+		}
+		return resp, nil
+		// return nil, fmt.Errorf("openai generate failed: %v", err)
 	}
 
 	log.Printf("current msg: %v", messages)
-	resp, err := o.llm.Generate(ctx, messages)
+	resp, err = o.llm.Generate(ctx, messages)
 	if err != nil {
 		return nil, fmt.Errorf("openai generate summary failed: %v", err)
 	}
@@ -182,7 +227,7 @@ func NewOllamaModel(ctx context.Context, baseURL, modelName string) (*OllamaMode
 	return &OllamaModel{llm: llm}, nil
 }
 
-func (o *OllamaModel) GenerateResponse(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {
+func (o *OllamaModel) GenerateResponse(ctx context.Context, messages []*schema.Message, opts ...ToolOption) (*schema.Message, error) {
 	resp, err := o.llm.Generate(ctx, messages)
 	if err != nil {
 		return nil, fmt.Errorf("ollama generate failed: %v", err)

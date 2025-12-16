@@ -33,6 +33,10 @@
           <input type="checkbox" id="streamingMode" v-model="isStreaming" />
           流式响应
         </label>
+        <label class="toggle-option">
+          <input type="checkbox" v-model="isUsingGoogle" />
+          使用 Google
+        </label>
       </div>
 
       <div class="chat-messages" ref="messagesRef">
@@ -46,7 +50,15 @@
             <button v-if="message.role === 'assistant'" class="tts-btn" @click="playTTS(message.content)">🔊</button>
             <span v-if="message.meta && message.meta.status === 'streaming'" class="streaming-indicator"> ··</span>
           </div>
-          <div class="message-content" v-html="renderMarkdown(message.content)"></div>
+          <div class="message-content">
+            <MdPreview
+              v-if="message.role === 'assistant'"
+              :modelValue="message.content"
+              previewTheme="github"
+              :showCodeRowNumber="false"
+            />
+            <div v-else class="user-plain-text">{{ message.content }}</div>
+          </div>
         </div>
       </div>
 
@@ -76,14 +88,16 @@
 </template>
 
 <script>
-
-
 import { ref, nextTick, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { MdPreview } from 'md-editor-v3'
 import api from '../utils/api'
 
 export default {
   name: 'AIChat',
+  components: {
+    MdPreview
+  },
   setup() {
 
     const sessions = ref({})               
@@ -96,6 +110,7 @@ export default {
     const messageInput = ref(null)
     const selectedModel = ref('1')
     const isStreaming = ref(false)
+    const isUsingGoogle = ref(false)
 
     const modelValueToLabel = (value) => {
       const normalized = String(value ?? '').toLowerCase()
@@ -112,15 +127,6 @@ export default {
       return String(label)
     }
 
-
-    const renderMarkdown = (text) => {
-      if (!text && text !== '') return ''
-      return String(text)
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`(.*?)`/g, '<code>$1</code>')
-        .replace(/\n/g, '<br>')
-    }
 
     const playTTS = async (text) => {
       try {
@@ -307,8 +313,13 @@ export default {
       }
 
       const body = tempSession.value
-        ? { question: question, modelType: selectedModel.value }
-        : { question: question, modelType: selectedModel.value, sessionId: currentSessionId.value }
+        ? { question: question, modelType: selectedModel.value, usingGoogle: isUsingGoogle.value }
+        : {
+            question: question,
+            modelType: selectedModel.value,
+            sessionId: currentSessionId.value,
+            usingGoogle: isUsingGoogle.value
+          }
 
       try {
         // 创建 fetch 连接读取 SSE 流
@@ -430,7 +441,8 @@ export default {
 
         const response = await api.post('/AI/chat/send-new-session', {
           question: question,
-          modelType: selectedModel.value
+          modelType: selectedModel.value,
+          usingGoogle: isUsingGoogle.value
         })
         if (response.data && response.data.status_code === 1000) {
           const sessionId = String(response.data.sessionId)
@@ -462,7 +474,8 @@ export default {
         const response = await api.post('/AI/chat/send', {
           question: question,
           modelType: selectedModel.value,
-          sessionId: currentSessionId.value
+          sessionId: currentSessionId.value,
+          usingGoogle: isUsingGoogle.value
         })
         if (response.data && response.data.status_code === 1000) {
           const aiMessage = { role: 'assistant', content: response.data.Information || '' }
@@ -505,8 +518,8 @@ export default {
       messageInput,
       selectedModel,
       isStreaming,
+      isUsingGoogle,
       canInteract,
-      renderMarkdown,
       playTTS,
       createNewSession,
       switchSession,
@@ -614,6 +627,14 @@ export default {
   background: #fff;
 }
 
+.toggle-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #3c4043;
+}
+
 .back-btn,
 .sync-btn {
   padding: 8px 16px;
@@ -695,6 +716,23 @@ export default {
 }
 
 .message-content {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.message-content :deep(.md-editor-preview) {
+  background: transparent;
+  padding: 0;
+}
+
+.message-content :deep(pre) {
+  background: #f1f3f4;
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.user-plain-text {
   white-space: pre-wrap;
   word-break: break-word;
 }
