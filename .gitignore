@@ -31,8 +31,8 @@ coverage/
 *.coverprofile
 
 # Keys
-env.sh
 config.toml
+env.sh
 
 # Test Dir
 test/
