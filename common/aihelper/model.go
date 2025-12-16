@@ -37,11 +37,13 @@ type OpenAIModel struct {
 // 工具选择
 type ToolOptions struct {
 	usingGoogle bool
+	usingRAG    bool
 }
 
 func defaultToolOptions() *ToolOptions {
 	out := &ToolOptions{
 		usingGoogle: false,
+		usingRAG:    false,
 	}
 	return out
 }
@@ -51,6 +53,12 @@ type ToolOption func(opts *ToolOptions)
 func WithGoogleTool() ToolOption {
 	return func(opts *ToolOptions) {
 		opts.usingGoogle = true
+	}
+}
+
+func WithRAGTool() ToolOption {
+	return func(opts *ToolOptions) {
+		opts.usingRAG = true
 	}
 }
 
@@ -84,16 +92,33 @@ func (o *OpenAIModel) GenerateResponse(ctx context.Context, messages []*schema.M
 		opt(options)
 	}
 
-	// 如果不需要工具，直接使用 chat 生成回复
-	if !options.usingGoogle {
-		resp, err := o.llm.Generate(ctx, messages)
-		if err != nil {
-			return nil, fmt.Errorf("openai generate failed: %v", err)
-		}
-		return resp, nil
+	// 使用 Google 能力进行回复
+	if options.usingGoogle {
+		return o.GenerateResponseWithGoogle(ctx, messages)
 	}
 
-	// TODO: 接入工具，构建 agent
+	if options.usingRAG {
+		return o.GenerateResponseWithRAG(ctx, messages)
+	}
+
+	// 如果不需要工具，直接使用 chat 生成回复
+	resp, err := o.llm.Generate(ctx, messages)
+	if err != nil {
+		return nil, fmt.Errorf("openai generate failed: %v", err)
+	}
+	return resp, nil
+
+}
+
+func (o *OpenAIModel) GenerateResponseWithRAG(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {
+	ragTool, err := tools.GetTools().GetVikingDBRetriever(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get RAG tool failed: %v", err)
+	}
+}
+
+func (o *OpenAIModel) GenerateResponseWithGoogle(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {
+	// 接入 Google，使用 Google 能力进行回答
 	googleTools, err := tools.GetTools().GetGoogleSearchTool(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("get google search tool failed: %v", err)
