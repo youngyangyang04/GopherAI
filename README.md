@@ -6,7 +6,8 @@ GopherAI 是一个基于 Go + Vue3 的 AI 应用服务平台，聚合了多会�
 
 - **多会话 AI 助手**：Gin + GORM + Redis 维护用户上下文，RabbitMQ 异步写入历史消息，前端通过 SSE 实时接收回复。
 - **图像识别链路**：提供图片上传、预处理、ONNXRuntime 推理到分类标签输出的全流程代码，便于扩展更多视觉模型。
-- **RAG + 搜索增强**：后端通过 `usingGoogle` / `usingRAG` 开关动态接入谷歌搜索工具和火山引擎 VikingDB 检索器，结合大模型进行知识补全。
+- **Google 搜索工具链**：在请求体中指定 `usingGoogle=true`，Qwen-Plus 会借助 CloudWeGo EinO ToolNode 调用 Google Custom Search API，把最新网页结果注入上下文后生成回答。
+- **VikingDB RAG 检索**：设置 `usingRAG=true` 时，服务会利用火山引擎 VikingDB Retriever 召回业务知识库，在回答里追加“参考资料”段落，保证可追溯性。
 - **流式推理与消息落库**：支持会话首次创建与既有会话触发 SSE 流式回答，消息借助 RabbitMQ 异步入库，保证高并发下的实时体验与可靠性。
 - **会话热启动管理**：服务启动时自动从 MySQL 预载会话/消息到内存态 AIHelper 管理器，支持历史会话秒级恢复和多模型策略。
 - **高并发友好架构**：通用中间件（日志、认证、限流）、RabbitMQ 解耦写入、Redis 缓存加速，确保响应速度和扩展能力。
@@ -97,4 +98,6 @@ npm run serve
 
 确保 MySQL、Redis、RabbitMQ 已启动并与配置文件保持一致。
 
-> 特别感谢 Codex 的大力支持，协助我们快速完善文档与代码细节。
+## 🙏 致谢
+
+- 感谢 Codex 的大力支持，协助我们快速完善文档与代码细节。
