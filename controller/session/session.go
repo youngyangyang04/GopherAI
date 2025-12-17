@@ -20,6 +20,7 @@ type (
 		UserQuestion string `json:"question" binding:"required"`  // 用户问题;
 		ModelType    string `json:"modelType" binding:"required"` // 模型类型;
 		UsingGoogle  bool   `json:"usingGoogle,omitempty"`        // 是否使用Google搜索
+		UsingRAG     bool   `json:"usingRAG,omitempty"`           // 是否使用RAG检索
 	}
 
 	CreateSessionAndSendMessageResponse struct {
@@ -33,6 +34,7 @@ type (
 		ModelType    string `json:"modelType" binding:"required"`           // 模型类型;
 		SessionID    string `json:"sessionId,omitempty" binding:"required"` // 当前会话ID
 		UsingGoogle  bool   `json:"usingGoogle,omitempty"`                  // 是否使用Google搜索
+		UsingRAG     bool   `json:"usingRAG,omitempty"`                     // 是否使用RAG检索
 	}
 
 	ChatSendResponse struct {
@@ -73,7 +75,7 @@ func CreateSessionAndSendMessage(c *gin.Context) {
 		return
 	}
 	//内部会创建会话并发送消息，并会将AI回答、当前会话返回
-	session_id, aiInformation, code_ := session.CreateSessionAndSendMessage(userName, req.UserQuestion, req.ModelType, req.UsingGoogle)
+	session_id, aiInformation, code_ := session.CreateSessionAndSendMessage(userName, req.UserQuestion, req.ModelType, req.UsingGoogle, req.UsingRAG)
 
 	if code_ != code.CodeSuccess {
 		c.JSON(http.StatusOK, res.CodeOf(code_))
@@ -129,7 +131,7 @@ func ChatSend(c *gin.Context) {
 		return
 	}
 	// 发送消息，并会将AI回答返回
-	aiInformation, code_ := session.ChatSend(userName, req.SessionID, req.UserQuestion, req.ModelType, req.UsingGoogle)
+	aiInformation, code_ := session.ChatSend(userName, req.SessionID, req.UserQuestion, req.ModelType, req.UsingGoogle, req.UsingRAG)
 
 	if code_ != code.CodeSuccess {
 		c.JSON(http.StatusOK, res.CodeOf(code_))

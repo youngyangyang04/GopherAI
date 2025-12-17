@@ -51,12 +51,24 @@
             type="button"
             class="chip-toggle"
             :class="{ active: isUsingGoogle }"
-            @click="isUsingGoogle = !isUsingGoogle"
+            @click="toggleGoogle"
           >
             <span class="chip-indicator"></span>
             <span class="chip-text">
               <strong>使用 Google</strong>
               <small>{{ isUsingGoogle ? '已启用' : '未启用' }}</small>
+            </span>
+          </button>
+          <button
+            type="button"
+            class="chip-toggle"
+            :class="{ active: isUsingRAG }"
+            @click="toggleRAG"
+          >
+            <span class="chip-indicator rag"></span>
+            <span class="chip-text">
+              <strong>专家问诊</strong>
+              <small>{{ isUsingRAG ? 'RAG 检索' : '默认模式' }}</small>
             </span>
           </button>
         </div>
@@ -134,6 +146,7 @@ export default {
     const selectedModel = ref('1')
     const isStreaming = ref(false)
     const isUsingGoogle = ref(false)
+    const isUsingRAG = ref(false)
 
     const modelValueToLabel = (value) => {
       const normalized = String(value ?? '').toLowerCase()
@@ -185,6 +198,22 @@ export default {
         console.error('TTS error:', error)
         ElMessage.error('请求语音接口失败')
       }
+    }
+
+    const toggleGoogle = () => {
+      if (!isUsingGoogle.value && isUsingRAG.value) {
+        ElMessage.warning('Google 搜索和专家问诊不能同时启用，请先关闭专家问诊')
+        return
+      }
+      isUsingGoogle.value = !isUsingGoogle.value
+    }
+
+    const toggleRAG = () => {
+      if (!isUsingRAG.value && isUsingGoogle.value) {
+        ElMessage.warning('Google 搜索和专家问诊不能同时启用，请先关闭 Google 搜索')
+        return
+      }
+      isUsingRAG.value = !isUsingRAG.value
     }
 
     const loadSessions = async () => {
@@ -360,12 +389,18 @@ export default {
       }
 
       const body = tempSession.value
-        ? { question: question, modelType: selectedModel.value, usingGoogle: isUsingGoogle.value }
+        ? {
+            question: question,
+            modelType: selectedModel.value,
+            usingGoogle: isUsingGoogle.value,
+            usingRAG: isUsingRAG.value
+          }
         : {
             question: question,
             modelType: selectedModel.value,
             sessionId: currentSessionId.value,
-            usingGoogle: isUsingGoogle.value
+            usingGoogle: isUsingGoogle.value,
+            usingRAG: isUsingRAG.value
           }
 
       try {
@@ -491,7 +526,8 @@ export default {
         const response = await api.post('/AI/chat/send-new-session', {
           question: question,
           modelType: selectedModel.value,
-          usingGoogle: isUsingGoogle.value
+          usingGoogle: isUsingGoogle.value,
+          usingRAG: isUsingRAG.value
         })
         if (response.data && response.data.status_code === 1000) {
           const sessionId = String(response.data.sessionId)
@@ -525,7 +561,8 @@ export default {
           question: question,
           modelType: selectedModel.value,
           sessionId: currentSessionId.value,
-          usingGoogle: isUsingGoogle.value
+          usingGoogle: isUsingGoogle.value,
+          usingRAG: isUsingRAG.value
         })
         if (response.data && response.data.status_code === 1000) {
           const aiMessage = { role: 'assistant', content: response.data.Information || '' }
@@ -573,13 +610,16 @@ export default {
       selectedModel,
       isStreaming,
       isUsingGoogle,
+      isUsingRAG,
       canInteract,
       formatUpdateTime,
       playTTS,
       createNewSession,
       switchSession,
       syncHistory,
-      sendMessage
+      sendMessage,
+      toggleGoogle,
+      toggleRAG
     }
   }
 }
@@ -750,6 +790,10 @@ export default {
   background: #c3c6d9;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
 }
+.chip-toggle .chip-indicator.rag {
+  background: #d7c3ff;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+}
 
 .chip-toggle .chip-text {
   display: flex;
@@ -781,6 +825,9 @@ export default {
 
 .chip-toggle.active .chip-indicator.google {
   background: linear-gradient(135deg, #34a853, #fbbc04, #4285f4);
+}
+.chip-toggle.active .chip-indicator.rag {
+  background: linear-gradient(135deg, #9c27b0, #e040fb);
 }
 
 .chip-toggle.active .chip-text small {

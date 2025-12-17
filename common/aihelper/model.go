@@ -115,6 +115,37 @@ func (o *OpenAIModel) GenerateResponseWithRAG(ctx context.Context, messages []*s
 	if err != nil {
 		return nil, fmt.Errorf("get RAG tool failed: %v", err)
 	}
+
+	// 使用 RAG 工具查找资料
+	query := messages[len(messages)-1].Content
+	docs, err := ragTool.Retrieve(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("RAG tool retrieve failed: %v", err)
+	}
+
+	// 将检索到的资料添加到消息中
+	for _, doc := range docs {
+		messages = append(messages, &schema.Message{
+			Role:    schema.Assistant,
+			Content: fmt.Sprintf("参考资料：%s", doc.Content),
+		})
+	}
+
+	// 使用增强后的消息生成回复
+	resp, err := o.llm.Generate(ctx, messages)
+	if err != nil {
+		return nil, fmt.Errorf("openai generate with RAG failed: %v", err)
+	}
+
+	// 在 ## 参考资料 ## 部分添加引用信息
+	var references strings.Builder
+	references.WriteString("## 参考资料 ##\n")
+	for i, doc := range docs {
+		references.WriteString(fmt.Sprintf("[%d] 文档ID: %s, 内容: %s\n", i+1, doc.ID, doc.Content))
+	}
+	resp.Content += "\n" + references.String()
+
+	return resp, nil
 }
 
 func (o *OpenAIModel) GenerateResponseWithGoogle(ctx context.Context, messages []*schema.Message) (*schema.Message, error) {

@@ -70,7 +70,7 @@ func (a *AIHelper) GetMessages() []*model.Message {
 }
 
 // 同步生成
-func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQuestion string, usingGoogle bool) (*model.Message, error) {
+func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQuestion string, usingGoogle bool, usingRAG bool) (*model.Message, error) {
 
 	//调用存储函数
 	a.AddMessage(userQuestion, userName, true, true)
@@ -85,6 +85,11 @@ func (a *AIHelper) GenerateResponse(userName string, ctx context.Context, userQu
 	var err error
 	if usingGoogle {
 		schemaMsg, err = a.model.GenerateResponse(ctx, messages, WithGoogleTool())
+	} else if usingRAG {
+		schemaMsg, err = a.model.GenerateResponse(ctx, messages, WithRAGTool())
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		schemaMsg, err = a.model.GenerateResponse(ctx, messages)
 		if err != nil {
