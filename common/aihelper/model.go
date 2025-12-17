@@ -137,11 +137,20 @@ func (o *OpenAIModel) GenerateResponseWithRAG(ctx context.Context, messages []*s
 		return nil, fmt.Errorf("openai generate with RAG failed: %v", err)
 	}
 
-	// 在 ## 参考资料 ## 部分添加引用信息
+	// TODO: 修改成
+	// ## Answer
+	// ……根据指南，优先选择 A 方案。[^1] 如果出现 B 情况，则改用 C。[^2]
+
+	// ## References
+	// [^1]: **Doc 1 — Knowledge**
+	// > 原文摘录：……（建议控制在 1–3 段）
+
+	// [^2]: **Doc 2 — Knowledge**
+	// > 原文摘录：……
 	var references strings.Builder
 	references.WriteString("## 参考资料 ##\n")
 	for i, doc := range docs {
-		references.WriteString(fmt.Sprintf("[%d] 文档ID: %s, 内容: %s\n", i+1, doc.ID, doc.Content))
+		references.WriteString(fmt.Sprintf("**Doc %d — Knowledge**\n >原文摘录: %s\n\n", i+1, doc.Content))
 	}
 	resp.Content += "\n" + references.String()
 
